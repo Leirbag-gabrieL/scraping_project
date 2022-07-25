@@ -1,36 +1,36 @@
+from email import header
 import json
+from wsgiref import headers
 import scrapy
-from item_scraper.spiders.url_builder import build_url
-from item_scraper.spiders.take_a_line import random_line
+from item_scraper.spiders.url_builder import *
+import unidecode
 root_build_url = "https://api.zenithwakfu.com/builder/api/build/"
+base_url_pageless = ""
 
 class BuildSpider(scrapy.Spider):
     name = "build_spider"
-    
+
     def start_requests(self):
-        url = build_url(classes=["roub"], level_begin=0, level_end=50, page=1)
-        headers = {
-            "Host":"api.zenithwakfu.com",
-            "Accept-Encoding":"gzip, deflate, br",
-            "Origin":"https://www.zenithwakfu.com",
-            "Connection":"keep-alive",
-            "Referer":"https://www.zenithwakfu.com/",
-            "Sec-Fetch-Dest":"empty",
-            "Sec-Fetch-Mode":"cors",
-            "Sec-Fetch-Site":"same-site",
-            "User-Agent":random_line(),
-            "Accept":"application/json, text/plain, */*",
-            "Accept-Language":"en-US,en;q=0.5",
-            "X-Requested-With":"XMLHttpRequest",
-            "Pragma":"no-cache",
-            "Cache-Control":"no-cache"
-        }
-        yield scrapy.Request(url, headers=headers, callback=self.parse)
+        global base_url_pageless
+        global root_build_url
+        
+        url, base_url_pageless = build_url(classes=["roub"], level_begin=0, level_end=1)
+        yield scrapy.Request(url, headers= generate_builds_header(), callback=self.parse)
 
     def parse(self, response):
-        print("\n\n\n\n\n")
         jsonresp = json.loads(response.text)
-        print(f"nombre de pages : {jsonresp['pages']}")
-        for i in jsonresp['builds']:
-            print(f"lien build : {i['link_build']} | user : {i['user']}")
-        print("\n\n\n\n\n")
+
+        for i in range(1,jsonresp['pages']+1):
+            yield scrapy.Request(url=base_url_pageless + str(i), headers=generate_builds_header(), callback=self.parse_page_with_builds)
+    
+    def parse_page_with_builds(self, response):
+        jsonresp = json.loads(response.text)
+
+        for hash in list(map(lambda build: build['link_build'], jsonresp['builds'])):
+            yield scrapy.Request(url=root_build_url + hash, headers=generate_single_build_header(), callback=self.parse_page_with_single_build)
+    
+    def parse_page_with_single_build(self, response):
+        jsonresp = json.loads(response.text)
+        return {"item_names": list(map(lambda item: unidecode.unidecode(item['name_equipment']), jsonresp['equipments'])),
+                "build_name": unidecode.unidecode(jsonresp['name_build'])
+        }
