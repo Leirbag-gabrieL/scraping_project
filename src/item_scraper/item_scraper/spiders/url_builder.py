@@ -1,13 +1,12 @@
+from random import random
+from item_scraper.spiders.take_a_line import random_line
+
 authorized_flags = ["dps", "heal", "tank", "supp", "dj", "bu", "pvp", "easy", "medium", "hard"]
 
 authorized_class = ["feca", "osa", "enu", "sram", "xel", "eca", "eni", "iop", "cra", "sadi", "sacri", "panda", "roub", "zobal", "ougi", "steam", "elio", "hupper"]
 
-def build_url(classes= [], level_begin= 0, level_end= 230, page = 1, flags = []):
+def build_url(classes= [], level_begin= 0, level_end= 230, flags = []):
     base_url = "https://api.zenithwakfu.com/builder/api/list?"
-
-    if page < 1:
-        "Wrong page number"
-        return None
 
     if len(flags) != len(set(flags)):
         print("Wrong flag format")
@@ -48,5 +47,45 @@ def build_url(classes= [], level_begin= 0, level_end= 230, page = 1, flags = [])
     if flags or classes:
         base_url += "&"
     
-    base_url += f"level={level_begin}%2C{level_end}&page={page}"
-    return base_url
+    base_url += f"level={level_begin}%2C{level_end}"
+    base_url_pageless = base_url + "&page="
+
+    return base_url, base_url_pageless
+
+def generate_builds_header():
+    headers = {
+            "Host": "api.zenithwakfu.com",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Origin": "https://www.zenithwakfu.com",
+            "Connection": "keep-alive",
+            "Referer": "https://www.zenithwakfu.com/",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-site",
+            "User-Agent": random_line(),
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.5",
+            "X-Requested-With": "XMLHttpRequest",
+            "Pragma": "no-cache",
+            "Cache-Control": "no-cache"
+        }
+    return headers
+
+def generate_single_build_header():
+    headers = {
+            "Host": "api.zenithwakfu.com",
+            "User-Agent": random_line(),
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Referer": "https://www.zenithwakfu.com/",
+            "Origin": "https://www.zenithwakfu.com",
+            "Connection": "keep-alive",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "no-cors",
+            "Sec-Fetch-Site": "same-site",
+            "X-Requested-With": "XMLHttpRequest",
+            "Pragma": "no-cache",
+            "Cache-Control": "no-cache"
+        }
+    return headers
