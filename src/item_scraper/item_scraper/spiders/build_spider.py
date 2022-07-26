@@ -1,36 +1,83 @@
+from email import header
 import json
+from wsgiref import headers
 import scrapy
-from item_scraper.spiders.url_builder import build_url
-from item_scraper.spiders.take_a_line import random_line
+from item_scraper.spiders.url_builder import *
+<<<<<<< HEAD
+import pandas as pd
 root_build_url = "https://api.zenithwakfu.com/builder/api/build/"
+base_url_pageless = ""
+item_array = {}
+=======
+root_build_url = "https://api.zenithwakfu.com/builder/api/build/"
+base_url_pageless = ""
+>>>>>>> master
 
 class BuildSpider(scrapy.Spider):
     name = "build_spider"
-    
+
     def start_requests(self):
-        url = build_url(classes=["roub"], level_begin=0, level_end=50, page=1)
-        headers = {
-            "Host":"api.zenithwakfu.com",
-            "Accept-Encoding":"gzip, deflate, br",
-            "Origin":"https://www.zenithwakfu.com",
-            "Connection":"keep-alive",
-            "Referer":"https://www.zenithwakfu.com/",
-            "Sec-Fetch-Dest":"empty",
-            "Sec-Fetch-Mode":"cors",
-            "Sec-Fetch-Site":"same-site",
-            "User-Agent":random_line(),
-            "Accept":"application/json, text/plain, */*",
-            "Accept-Language":"en-US,en;q=0.5",
-            "X-Requested-With":"XMLHttpRequest",
-            "Pragma":"no-cache",
-            "Cache-Control":"no-cache"
-        }
-        yield scrapy.Request(url, headers=headers, callback=self.parse)
+        global base_url_pageless
+        global root_build_url
+<<<<<<< HEAD
+        global item_array
+        
+        url, base_url_pageless = build_url(classes=['panda'], level_begin=50, level_end=50, flags=['hard', 'dps'])
+        yield scrapy.Request(url, headers= generate_builds_header(), callback=self.parse)
 
     def parse(self, response):
-        print("\n\n\n\n\n")
         jsonresp = json.loads(response.text)
-        print(f"nombre de pages : {jsonresp['pages']}")
-        for i in jsonresp['builds']:
-            print(f"lien build : {i['link_build']} | user : {i['user']}")
+
+        for i in range(1,jsonresp['pages']+1):
+            yield scrapy.Request(url=base_url_pageless + str(i), headers=generate_builds_header(), callback=self.parse_page_with_builds)
+    
+    def parse_page_with_builds(self, response):
+        jsonresp = json.loads(response.text)
+
+        for hash in list(map(lambda build: build['link_build'], jsonresp['builds'])):
+            yield scrapy.Request(url=root_build_url + hash, headers=generate_single_build_header(), callback=self.parse_page_with_single_build)
+    
+    def parse_page_with_single_build(self, response):
+        jsonresp = json.loads(response.text)
+        
+        for item in jsonresp['equipments']:
+            if item['name_equipment'] in item_array:
+                item_array[item['name_equipment']] += 1
+            else:
+                item_array[item['name_equipment']] = 1
+
+    def closed(self, reason):
+        if reason == "finished":
+            pd.DataFrame(sorted(item_array.items(), key=lambda item: item[1], reverse=True)).to_csv('out.csv')
+            #with open("out.json", "w") as outfile:
+            #    json.dump(sorted(item_array.items(), key=lambda item: item[1], reverse=True), outfile, indent=0, ensure_ascii=False)
+=======
+        
+        url, base_url_pageless = build_url(classes=["roub"], level_begin=0, level_end=1)
+        yield scrapy.Request(url, headers= generate_builds_header(), callback=self.parse)
+
+    def parse(self, response):
+        jsonresp = json.loads(response.text)
+
+        """jsonresp = json.loads(response.text)
+        yield {"hashs" : list(map(lambda x: x['link_build'], jsonresp['builds'])),
+                "url" : base_url_pageless
+        }
         print("\n\n\n\n\n")
+        print("\n\n\n\n\n")"""
+
+        for i in range(1,jsonresp['pages']+1):
+            yield scrapy.Request(url=base_url_pageless + str(i), headers=generate_builds_header(), callback=self.parse_page_with_builds)
+    
+    def parse_page_with_builds(self, response):
+        jsonresp = json.loads(response.text)
+
+        for hash in list(map(lambda build: build['link_build'], jsonresp['builds'])):
+            yield scrapy.Request(url=root_build_url + hash, headers=generate_single_build_header(), callback=self.parse_page_with_single_build)
+    
+    def parse_page_with_single_build(self, response):
+        jsonresp = json.loads(response.text)
+        return {"item_names": list(map(lambda item: item['name_equipment'], jsonresp['equipments'])),
+                "build_name": jsonresp['name_build']
+        }
+>>>>>>> master
