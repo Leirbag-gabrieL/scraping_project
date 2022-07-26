@@ -14,7 +14,7 @@ class BuildSpider(scrapy.Spider):
         global base_url_pageless
         global root_build_url
         
-        url, base_url_pageless = build_url(classes=["roub"], level_begin=0, level_end=1)
+        url, base_url_pageless = build_url(classes=['panda'], level_begin=50, level_end=50, flags=['hard', 'dps'])
         yield scrapy.Request(url, headers= generate_builds_header(), callback=self.parse)
 
     def parse(self, response):
@@ -32,5 +32,5 @@ class BuildSpider(scrapy.Spider):
     def parse_page_with_single_build(self, response):
         jsonresp = json.loads(response.text)
         return {"item_names": list(map(lambda item: unidecode.unidecode(item['name_equipment']), jsonresp['equipments'])),
-                "build_name": unidecode.unidecode(jsonresp['name_build'])
+                "build_name": unidecode.unidecode(jsonresp['name_build']) if jsonresp['name_build'] else "build sans nom"
         }
