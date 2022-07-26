@@ -17,7 +17,7 @@ NEWSPIDER_MODULE = 'item_scraper.spiders'
 #USER_AGENT = 'item_scraper (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 CONCURRENT_REQUESTS = 128
@@ -33,7 +33,11 @@ DOWNLOAD_DELAY = 0.25
 # Disable cookies (enabled by default)
 COOKIES_ENABLED = False
 
+<<<<<<< HEAD
 PROXY_POOL_ENABLED = True
+=======
+#PROXY_POOL_ENABLED = True
+>>>>>>> master
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
