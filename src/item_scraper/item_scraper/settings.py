@@ -33,11 +33,7 @@ DOWNLOAD_DELAY = 0.25
 # Disable cookies (enabled by default)
 COOKIES_ENABLED = False
 
-<<<<<<< HEAD
 PROXY_POOL_ENABLED = True
-=======
-#PROXY_POOL_ENABLED = True
->>>>>>> master
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
