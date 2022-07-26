@@ -6,6 +6,7 @@ from item_scraper.spiders.url_builder import *
 import unidecode
 root_build_url = "https://api.zenithwakfu.com/builder/api/build/"
 base_url_pageless = ""
+item_array = {}
 
 class BuildSpider(scrapy.Spider):
     name = "build_spider"
@@ -13,6 +14,7 @@ class BuildSpider(scrapy.Spider):
     def start_requests(self):
         global base_url_pageless
         global root_build_url
+        global item_array
         
         url, base_url_pageless = build_url(classes=['panda'], level_begin=50, level_end=50, flags=['hard', 'dps'])
         yield scrapy.Request(url, headers= generate_builds_header(), callback=self.parse)
@@ -31,6 +33,14 @@ class BuildSpider(scrapy.Spider):
     
     def parse_page_with_single_build(self, response):
         jsonresp = json.loads(response.text)
-        return {"item_names": list(map(lambda item: unidecode.unidecode(item['name_equipment']), jsonresp['equipments'])),
-                "build_name": unidecode.unidecode(jsonresp['name_build']) if jsonresp['name_build'] else "build sans nom"
-        }
+        
+        for item in jsonresp['equipments']:
+            if item['name_equipment'] in item_array:
+                item_array[item['name_equipment']] += 1
+            else:
+                item_array[item['name_equipment']] = 1
+
+    def closed(self, reason):
+        if reason == "finished":
+            with open("out.json", "w") as outfile:
+                json.dump(sorted(item_array.items(), key=lambda item: item[1], reverse=True), outfile, indent=0, ensure_ascii=False)
