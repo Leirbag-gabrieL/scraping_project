@@ -1,9 +1,7 @@
-from email import header
 import json
-from wsgiref import headers
 import scrapy
 from item_scraper.spiders.url_builder import *
-import unidecode
+import pandas as pd
 root_build_url = "https://api.zenithwakfu.com/builder/api/build/"
 base_url_pageless = ""
 item_array = {}
@@ -42,5 +40,6 @@ class BuildSpider(scrapy.Spider):
 
     def closed(self, reason):
         if reason == "finished":
-            with open("out.json", "w") as outfile:
-                json.dump(sorted(item_array.items(), key=lambda item: item[1], reverse=True), outfile, indent=0, ensure_ascii=False)
+            pd.DataFrame(sorted(item_array.items(), key=lambda item: item[1], reverse=True)).to_csv('out.csv')
+            #with open("out.json", "w") as outfile:
+            #    json.dump(sorted(item_array.items(), key=lambda item: item[1], reverse=True), outfile, indent=0, ensure_ascii=False)
