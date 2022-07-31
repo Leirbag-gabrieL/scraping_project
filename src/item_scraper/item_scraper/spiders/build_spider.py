@@ -44,6 +44,7 @@ class BuildSpider(scrapy.Spider):
 
     def printer(self, response):
         print(f"\n\n\n{response.text}\n\n\n")
+        print(f"\n\nurl valide : {response.url.startswith('https://www.zenithwakfu.com/builder')}\n\n")
 
     def parse(self, response):
         jsonresp = json.loads(response.text)
@@ -64,15 +65,19 @@ class BuildSpider(scrapy.Spider):
         jsonresp = json.loads(response.text)
         for item in jsonresp['equipments']:
             if item['name_equipment'] in item_array:
-                item_array[item['name_equipment']]["count"] += 1
+                item_array[item['name_equipment']][0] += 1
             else:
-                item_array[item['name_equipment']] = { "count": 1, "type": item['image_equipment_type'].split(".")[0]}
+                item_array[item['name_equipment']] = [1, item['image_equipment_type'].split(".")[0]]
 
     def closed(self, reason):
+        global item_array
         if reason == "finished":
             if msg:
                 print(f"\n\n\n{msg}\n\n\n")
                 return
             if not disp and item_array:
-                pd.DataFrame(sorted(item_array.items(), key=lambda item: item["count"], reverse=True)).to_csv('out.csv')
+                item_array = dict(sorted(item_array.items(), key=lambda item: item[1][0], reverse=True))
+                item_array = pd.DataFrame.from_dict(item_array, orient='index', columns=['count', 'category'])
+                item_array.index.name = "item"
+                item_array.to_csv('out.csv')
                 print(f"\n\n\nShitty build count : {shitty_build_count}\n\n\n")
