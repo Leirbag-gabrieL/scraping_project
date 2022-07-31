@@ -2,8 +2,16 @@ from re import sub
 from item_scraper.spiders.take_a_line import random_line
 
 def build_url(site_url):
+    if not site_url.startswith('https://www.zenithwakfu.com/builder'):
+        print("\n\nTon url doit commencé par https://www.zenithwakfu.com/builder\n\n")
+        return None , None
+
     base_url = "https://api.zenithwakfu.com/builder/api/list?"
-    query = sub("&page=\d+", "", site_url.split('?')[1])
+    try:
+        query = sub("&page=\d+", "", site_url.split('?')[1])
+    except IndexError:
+        print("\n\nMauvaise url, il faut une url de recherche, pas une url générale\n\n")
+        return None, None
     base_request = base_url + query
     pageless_url = base_request + "&page="
     return base_request, pageless_url

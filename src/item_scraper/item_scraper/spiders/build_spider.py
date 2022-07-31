@@ -18,14 +18,25 @@ class BuildSpider(scrapy.Spider):
         global item_array
         
         request = getattr(self, 'request', None)
+        display = getattr(self, 'display', None)
+
+
+        if display is not None and request is not None:
+            yield scrapy.Request(url=request, callback=self.printer)
+            return
+
         if(request is None):
-            raise scrapy.exceptions.CloseSpider("Put -a request=<request link here> when calling the spider")
+            raise scrapy.exceptions.CloseSpider("Mettre -a request=<lien de requête ici> à l'appel du programme")
         
         url, base_url_pageless = build_url(request)
         if(url is None):
-            raise scrapy.exceptions.CloseSpider("Bad request, just copy paste the one on your browser")
+            raise scrapy.exceptions.CloseSpider("Mauvaise request, il faut copier coller une requête directement du site")
 
         yield scrapy.Request(url, headers= generate_builds_header(), callback=self.parse)
+    
+
+    def printer(self, response):
+        print(f"\n\n{response.text}\n\n")
 
     def parse(self, response):
         jsonresp = json.loads(response.text)
