@@ -1,56 +1,20 @@
-from random import random
+from re import sub
 from item_scraper.spiders.take_a_line import random_line
 
-authorized_flags = ["dps", "heal", "tank", "supp", "dj", "bu", "pvp", "easy", "medium", "hard"]
+def build_url(site_url):
+    if not site_url.startswith('https://www.zenithwakfu.com/builder'):
+        print("\n\nTon url doit commencé par https://www.zenithwakfu.com/builder\n\n")
+        return None , None
 
-authorized_class = ["feca", "osa", "enu", "sram", "xel", "eca", "eni", "iop", "cra", "sadi", "sacri", "panda", "roub", "zobal", "ougi", "steam", "elio", "hupper"]
-
-def build_url(classes= [], level_begin= 0, level_end= 230, flags = []):
     base_url = "https://api.zenithwakfu.com/builder/api/list?"
-
-    if len(flags) != len(set(flags)):
-        print("Wrong flag format")
-        return None
-    
-    if len(classes) != len(set(classes)):
-        print("Wrong class format")
-        return None
-
-    if level_begin > level_end or level_begin < 0 or level_end > 230:
-        print("Wrong level")
-        return None
-
     try:
-        for i in range(len(flags)):
-            index = authorized_flags.index(flags[i]) + 1
-            if i == 0:
-                base_url += f"bflags={index}"
-            else:
-                base_url += f"%2C{index}"
-    except ValueError:
-        print("Wrong flag")
-        return None
-
-    try:
-        for i in range(len(classes)):
-            index = authorized_class.index(classes[i]) + 1
-            if i == 0:
-                if flags:
-                    base_url += "&"
-                base_url += f"jobs={index}"
-            else:
-                base_url += f"%2C{index}"
-    except ValueError:
-        print("Wrong class")
-        return None
-    
-    if flags or classes:
-        base_url += "&"
-    
-    base_url += f"level={level_begin}%2C{level_end}"
-    base_url_pageless = base_url + "&page="
-
-    return base_url, base_url_pageless
+        query = sub("&page=\d+", "", site_url.split('?')[1])
+    except IndexError:
+        print("\n\nMauvaise url, il faut une url de recherche, pas une url générale\n\n")
+        return None, None
+    base_request = base_url + query
+    pageless_url = base_request + "&page="
+    return base_request, pageless_url
 
 def generate_builds_header():
     headers = {

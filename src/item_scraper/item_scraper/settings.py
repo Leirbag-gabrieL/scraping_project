@@ -20,7 +20,7 @@ NEWSPIDER_MODULE = 'item_scraper.spiders'
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 128
+CONCURRENT_REQUESTS = 1
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -32,8 +32,6 @@ DOWNLOAD_DELAY = 0.25
 
 # Disable cookies (enabled by default)
 COOKIES_ENABLED = False
-
-PROXY_POOL_ENABLED = True
 
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
@@ -55,13 +53,6 @@ PROXY_POOL_ENABLED = True
 #DOWNLOADER_MIDDLEWARES = {
 #    'item_scraper.middlewares.ItemScraperDownloaderMiddleware': 543,
 #}
-
-DOWNLOADER_MIDDLEWARES = {
-    # ...
-    'scrapy_proxy_pool.middlewares.ProxyPoolMiddleware': 610,
-    'scrapy_proxy_pool.middlewares.BanDetectionMiddleware': 620,
-    # ...
-}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
