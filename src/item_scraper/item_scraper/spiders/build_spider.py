@@ -65,5 +65,3 @@ class BuildSpider(scrapy.Spider):
         if reason == "finished":
             pd.DataFrame(sorted(item_array.items(), key=lambda item: item[1], reverse=True)).to_csv('out.csv')
             print(f"\n\n\nShitty build count : {shitty_build_count}\n\n\n")
-            #with open("out.json", "w") as outfile:
-            #    json.dump(sorted(item_array.items(), key=lambda item: item[1], reverse=True), outfile, indent=0, ensure_ascii=False)
